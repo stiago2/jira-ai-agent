@@ -175,3 +175,63 @@ async def get_current_active_superuser(
             detail="No tienes permisos de administrador"
         )
     return current_user
+
+
+def get_user_jira_client(current_user: User = Depends(get_current_user)) -> JiraClient:
+    """
+    Get JiraClient instance with the current user's Jira credentials.
+
+    This dependency should be used in endpoints that need to interact with Jira
+    on behalf of the authenticated user.
+
+    Args:
+        current_user: The authenticated user (injected by dependency)
+
+    Returns:
+        JiraClient: Configured with user's Jira credentials
+
+    Raises:
+        HTTPException 400: If user hasn't configured Jira credentials
+        HTTPException 500: If JiraClient initialization fails
+
+    Example:
+        @app.get("/projects")
+        def list_projects(jira_client: JiraClient = Depends(get_user_jira_client)):
+            return jira_client.get_projects()
+    """
+    from app.core.encryption import decrypt_token
+
+    # Validate user has Jira credentials configured
+    if not current_user.jira_base_url:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Usuario no tiene configurada la URL de Jira. Por favor, actualiza tu perfil."
+        )
+
+    if not current_user.jira_email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Usuario no tiene configurado el email de Jira. Por favor, actualiza tu perfil."
+        )
+
+    if not current_user.jira_api_token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Usuario no tiene configurado el token de Jira. Por favor, actualiza tu perfil."
+        )
+
+    try:
+        # Decrypt Jira API token
+        decrypted_token = decrypt_token(current_user.jira_api_token)
+
+        # Create JiraClient with user's credentials
+        return JiraClient(
+            base_url=current_user.jira_base_url,
+            email=current_user.jira_email,
+            api_token=decrypted_token
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al inicializar cliente de Jira: {str(e)}"
+        )

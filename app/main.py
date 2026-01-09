@@ -4,7 +4,7 @@ FastAPI application entry point.
 Implementa endpoints para crear issues de Jira desde texto en lenguaje natural.
 """
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional, List
@@ -15,9 +15,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from app.parsers.task_parser import create_parser, ParsedTask
-from app.clients.jira_client import JiraAPIError
+from app.clients.jira_client import JiraAPIError, JiraClient
 from app.api.routes import instagram, batch_tasks, projects, auth
-from app.api.dependencies import get_jira_client
+from app.api.dependencies import get_jira_client, get_user_jira_client, get_current_user
+from app.models.user import User
 
 
 # ============================================================================
@@ -206,22 +207,26 @@ async def health_check():
 
 
 @app.get("/api/v1/projects", response_model=ProjectsListResponse)
-async def list_projects():
+async def list_projects(
+    jira_client: JiraClient = Depends(get_user_jira_client)
+):
     """
-    Lista todos los proyectos disponibles en Jira.
+    Lista todos los proyectos disponibles en Jira del usuario autenticado.
 
-    Útil para conocer los project_key que puedes usar al crear tareas.
+    Requiere autenticación con JWT token.
+
+    Args:
+        jira_client: Cliente de Jira con credenciales del usuario (inyectado)
 
     Returns:
         ProjectsListResponse con la lista de proyectos disponibles
 
     Raises:
-        HTTPException 401: Error de autenticación con Jira
+        HTTPException 401: Token inválido o expirado
+        HTTPException 400: Usuario sin credenciales de Jira configuradas
         HTTPException 500: Error interno del servidor
     """
     try:
-        # Obtener cliente de Jira
-        jira_client = get_jira_client()
 
         # Obtener proyectos
         projects_data = jira_client._make_request("GET", "/project")
@@ -301,24 +306,30 @@ async def parse_task_preview(request: CreateTaskRequest):
 
 
 @app.post("/api/v1/tasks/create", response_model=CreateTaskResponse)
-async def create_task_from_text(request: CreateTaskRequest):
+async def create_task_from_text(
+    request: CreateTaskRequest,
+    jira_client: JiraClient = Depends(get_user_jira_client)
+):
     """
     Crea un issue de Jira desde texto en lenguaje natural.
 
+    Requiere autenticación con JWT token.
+
     Proceso:
     1. Parsea el texto usando el TaskParser
-    2. Crea el issue en Jira usando el JiraClient
+    2. Crea el issue en Jira usando las credenciales del usuario autenticado
     3. Retorna el issue key y URL
 
     Args:
         request: Objeto con 'text' (descripción natural) y 'project_key' (proyecto Jira)
+        jira_client: Cliente de Jira con credenciales del usuario (inyectado)
 
     Returns:
         CreateTaskResponse con el issue_key, issue_url y datos parseados
 
     Raises:
         HTTPException 400: Error de validación o parsing
-        HTTPException 401: Error de autenticación con Jira
+        HTTPException 401: Token inválido o expirado
         HTTPException 404: Proyecto no encontrado
         HTTPException 500: Error interno del servidor
     """
@@ -326,9 +337,6 @@ async def create_task_from_text(request: CreateTaskRequest):
         # 1. Parsear el texto
         parser = get_parser()
         parsed_task = parser.parse(request.text)
-
-        # 2. Obtener cliente de Jira
-        jira_client = get_jira_client()
 
         # 3. Si hay assignee, buscar el Account ID
         assignee_account_id = None

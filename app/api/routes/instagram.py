@@ -8,7 +8,7 @@ from typing import List, Optional
 from app.parsers.task_parser import create_parser
 from app.clients.jira_client import JiraClient, JiraAPIError
 from app.services.reel_workflow_service import ReelWorkflowService
-from app.api.dependencies import get_jira_client, get_reel_workflow_service
+from app.api.dependencies import get_user_jira_client
 
 
 router = APIRouter(tags=["Instagram Content"])
@@ -73,30 +73,35 @@ class CreateInstagramContentResponse(BaseModel):
 @router.post("/instagram", response_model=CreateInstagramContentResponse)
 async def create_instagram_content(
     request: CreateInstagramContentRequest,
-    service: ReelWorkflowService = Depends(get_reel_workflow_service),
-    jira_client: JiraClient = Depends(get_jira_client)
+    jira_client: JiraClient = Depends(get_user_jira_client)
 ):
     """
     Crea contenido de Instagram (Reel, Historia o Carrusel) con workflow completo.
 
+    Requiere autenticación con JWT token.
+
     Proceso:
     1. Parsea el texto en lenguaje natural
     2. Detecta automáticamente: tipo de contenido, prioridad, assignee, labels
-    3. Crea tarea principal + 6 subtareas de producción
+    3. Crea tarea principal + 6 subtareas de producción usando credenciales del usuario
     4. Retorna el key de la tarea principal y subtareas
 
     Args:
         request: Objeto con 'text' (descripción natural) y 'project_key' (opcional)
+        jira_client: Cliente de Jira con credenciales del usuario (inyectado)
 
     Returns:
         CreateInstagramContentResponse con main_task_key y lista de subtasks
 
     Raises:
         HTTPException 400: Error de validación o parsing
-        HTTPException 401: Error de autenticación con Jira
+        HTTPException 401: Token inválido o expirado
         HTTPException 500: Error interno del servidor
     """
     try:
+        # Crear servicio de workflow con el JiraClient del usuario
+        service = ReelWorkflowService(jira_client)
+
         # 1. Parsear texto
         parser = create_parser(use_llm=False)
         parsed_task = parser.parse(request.text)

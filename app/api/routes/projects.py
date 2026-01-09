@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 
 from app.clients.jira_client import JiraClient, JiraAPIError
-from app.api.dependencies import get_jira_client
+from app.api.dependencies import get_user_jira_client
 
 
 router = APIRouter(tags=["Projects"])
@@ -42,16 +42,19 @@ class GetProjectUsersResponse(BaseModel):
 @router.get("/projects/{project_key}/users", response_model=GetProjectUsersResponse)
 async def get_project_users(
     project_key: str,
-    jira_client: JiraClient = Depends(get_jira_client)
+    jira_client: JiraClient = Depends(get_user_jira_client)
 ):
     """
     Obtiene todos los usuarios asignables a un proyecto específico.
+
+    Requiere autenticación con JWT token.
 
     Este endpoint es útil para mostrar dropdowns de usuarios en la UI,
     permitiendo asignar tareas a personas específicas del equipo.
 
     Args:
         project_key: Clave del proyecto de Jira (ej: "KAN")
+        jira_client: Cliente de Jira con credenciales del usuario (inyectado)
 
     Returns:
         GetProjectUsersResponse con lista de usuarios

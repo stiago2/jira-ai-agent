@@ -8,7 +8,7 @@ from typing import List, Optional
 from app.parsers.task_parser import create_parser
 from app.clients.jira_client import JiraClient, JiraAPIError
 from app.services.reel_workflow_service import ReelWorkflowService
-from app.api.dependencies import get_jira_client, get_reel_workflow_service
+from app.api.dependencies import get_user_jira_client
 
 
 router = APIRouter(tags=["Batch Tasks"])
@@ -112,11 +112,12 @@ class CreateBatchTasksResponse(BaseModel):
 @router.post("/batch", response_model=CreateBatchTasksResponse)
 async def create_batch_tasks(
     request: CreateBatchTasksRequest,
-    service: ReelWorkflowService = Depends(get_reel_workflow_service),
-    jira_client: JiraClient = Depends(get_jira_client)
+    jira_client: JiraClient = Depends(get_user_jira_client)
 ):
     """
     Crea múltiples workflows de Instagram (Reels/Historias/Carruseles) a partir de un array de textos.
+
+    Requiere autenticación con JWT token.
 
     Cada tarea genera:
     - 1 tarea principal
@@ -126,11 +127,12 @@ async def create_batch_tasks(
     Proceso:
     1. Parsea cada texto en lenguaje natural
     2. Detecta tipo de contenido (Reel, Historia o Carrusel)
-    3. Crea workflow completo con subtareas
+    3. Crea workflow completo con subtareas usando las credenciales del usuario
     4. Retorna un resumen con éxitos y fallos
 
     Args:
         request: Objeto con array de 'tasks' y 'project_key'
+        jira_client: Cliente de Jira con credenciales del usuario (inyectado)
 
     Returns:
         CreateBatchTasksResponse con resultados de cada workflow
@@ -146,6 +148,9 @@ async def create_batch_tasks(
         - Máximo 50 workflows por request (cada uno crea 7 tareas)
     """
     try:
+        # Crear servicio de workflow con el JiraClient del usuario
+        service = ReelWorkflowService(jira_client)
+
         parser = create_parser(use_llm=False)
         results = []
         total_created = 0
