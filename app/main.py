@@ -102,7 +102,7 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: Configure from settings
+    allow_origins=["*, 'https://jira-ai-agent.onrender.com/'"],  # TODO: Configure from settings
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
