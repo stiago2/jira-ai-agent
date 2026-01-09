@@ -16,7 +16,7 @@ import { JiraUser, GetProjectUsersResponse } from '../types/user.types';
 import { ApiError } from '../types/error.types';
 
 // Base URL del backend - puede configurarse via variable de entorno
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 /**
  * Clase para manejo de errores de API
