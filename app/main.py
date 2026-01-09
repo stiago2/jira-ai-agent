@@ -107,6 +107,17 @@ allowed_origins = [
     "https://jira-tracker-l5m9.onrender.com",
 ]
 
+# Middleware para debug de CORS (debe ir ANTES de agregar CORSMiddleware)
+@app.middleware("http")
+async def log_cors_debug(request, call_next):
+    origin = request.headers.get("origin")
+    method = request.method
+    print(f"🌐 {method} request from origin: {origin or 'No Origin'}")
+    if origin and origin not in allowed_origins:
+        print(f"⚠️  Origin NOT in allowed list!")
+    response = await call_next(request)
+    return response
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
@@ -115,17 +126,6 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"]
 )
-
-# Middleware para debug de CORS
-@app.middleware("http")
-async def log_cors_debug(request, call_next):
-    origin = request.headers.get("origin")
-    if origin:
-        print(f"🌐 Request from origin: {origin}")
-        if origin not in allowed_origins:
-            print(f"⚠️  Origin NOT in allowed list!")
-    response = await call_next(request)
-    return response
 
 # Include routers
 app.include_router(instagram.router, prefix="/api/v1/content")
