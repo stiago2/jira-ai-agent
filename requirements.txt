@@ -1,0 +1,25 @@
+# FastAPI and web server
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.5
+pydantic-settings==2.7.1
+
+# HTTP client
+httpx==0.28.1
+requests==2.32.3
+
+# Environment variables
+python-dotenv==1.0.1
+
+# Date/Time utilities
+python-dateutil==2.9.0.post0
+
+# Validation
+email-validator==2.2.0
+
+# Optional: Cache (Redis)
+redis==5.2.1
+
+# Optional: Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4

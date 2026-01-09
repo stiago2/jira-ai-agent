@@ -1,0 +1,66 @@
+jira-ai-agent/
+├── app/
+│   ├── __init__.py
+│   ├── main.py                      # FastAPI entry point
+│   │
+│   ├── api/
+│   │   ├── __init__.py
+│   │   ├── dependencies.py          # Dependency injection
+│   │   └── routes/
+│   │       ├── __init__.py
+│   │       ├── health.py            # Health check endpoints
+│   │       └── tasks.py             # Task CRUD endpoints
+│   │
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── config.py                # Pydantic Settings
+│   │   ├── exceptions.py            # Custom exceptions
+│   │   └── logging.py               # Logging configuration
+│   │
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── jira.py                  # Jira domain models
+│   │   ├── requests.py              # API request schemas
+│   │   └── responses.py             # API response schemas
+│   │
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── ai_service.py            # AI/LLM service
+│   │   ├── jira_service.py          # Jira REST API client
+│   │   └── task_orchestrator.py    # Main orchestrator
+│   │
+│   └── utils/
+│       ├── __init__.py
+│       ├── formatters.py            # Data formatters
+│       └── validators.py            # Data validators
+│
+├── tests/
+│   ├── __init__.py
+│   ├── conftest.py                  # Pytest fixtures
+│   ├── unit/
+│   │   └── __init__.py
+│   └── integration/
+│       └── __init__.py
+│
+├── config/
+│
+├── docs/
+│   └── PROJECT_STRUCTURE.md         # Structure documentation
+│
+├── scripts/
+│   ├── run_dev.sh                   # Dev server script
+│   └── setup.sh                     # Setup script
+│
+├── .env.example                     # Environment template
+├── .gitignore                       # Git ignore
+├── docker-compose.yml               # Docker Compose
+├── Dockerfile                       # Docker image
+├── PROJECT_SUMMARY.md               # Project summary
+├── pyproject.toml                   # Python config
+├── QUICKSTART.md                    # Quick start guide
+├── README.md                        # Main docs
+├── requirements-dev.txt             # Dev dependencies
+├── requirements.txt                 # Production dependencies
+└── TREE.txt                         # This file
+
+Total: 49 files
