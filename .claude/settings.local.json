@@ -6,7 +6,9 @@
       "Bash(source:*)",
       "Bash(npx create-react-app jira-tracker --template typescript)",
       "Bash(npm install:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nConfigure Render deployment with correct CORS and API URL\n\n- Fix CORS configuration in backend to allow frontend URL\n- Update frontend to use Vite env variable \\(VITE_API_URL\\)\n- Add TypeScript definitions for Vite environment variables\n\nBackend URL: https://jira-ai-agent.onrender.com\nFrontend URL: https://jira-tracker-l5m9.onrender.com\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   }
 }
