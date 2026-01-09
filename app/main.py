@@ -100,17 +100,32 @@ app = FastAPI(
 )
 
 # Configure CORS
+# Permitir frontend de producción y desarrollo
+allowed_origins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://jira-tracker-l5m9.onrender.com",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "https://jira-tracker-l5m9.onrender.com",
-        "https://jira-tracker-l5m9.onrender.com/"
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
+
+# Middleware para debug de CORS
+@app.middleware("http")
+async def log_cors_debug(request, call_next):
+    origin = request.headers.get("origin")
+    if origin:
+        print(f"🌐 Request from origin: {origin}")
+        if origin not in allowed_origins:
+            print(f"⚠️  Origin NOT in allowed list!")
+    response = await call_next(request)
+    return response
 
 # Include routers
 app.include_router(instagram.router, prefix="/api/v1/content")
