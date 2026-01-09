@@ -16,7 +16,7 @@ load_dotenv()
 
 from app.parsers.task_parser import create_parser, ParsedTask
 from app.clients.jira_client import JiraAPIError
-from app.api.routes import instagram, batch_tasks, projects
+from app.api.routes import instagram, batch_tasks, projects, auth
 from app.api.dependencies import get_jira_client
 
 
@@ -128,6 +128,7 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
 app.include_router(instagram.router, prefix="/api/v1/content")
 app.include_router(batch_tasks.router, prefix="/api/v1/tasks")
 app.include_router(projects.router, prefix="/api/v1")
@@ -153,17 +154,25 @@ async def root():
     """Root endpoint."""
     return {
         "name": "Jira AI Agent",
-        "version": "0.1.0",
+        "version": "0.2.0",
         "status": "running",
+        "authentication": "enabled",
         "endpoints": {
             "health": "/api/v1/health",
+            "auth": {
+                "register": "/api/v1/auth/register",
+                "login": "/api/v1/auth/login",
+                "me": "/api/v1/auth/me",
+                "logout": "/api/v1/auth/logout"
+            },
             "projects": "/api/v1/projects",
             "project_users": "/api/v1/projects/{project_key}/users",
             "create_task": "/api/v1/tasks/create",
             "parse_preview": "/api/v1/tasks/parse",
             "create_batch_tasks": "/api/v1/tasks/batch",
             "create_instagram_content": "/api/v1/content/instagram"
-        }
+        },
+        "docs": "/docs"
     }
 
 

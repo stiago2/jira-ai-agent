@@ -2,14 +2,22 @@
 API dependencies for dependency injection.
 """
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.database import get_db
+from app.core.security import verify_token
+from app.models.user import User
 from app.services.jira_service import JiraService
 from app.services.ai_service import AIService
 from app.services.task_orchestrator import TaskOrchestrator
 from app.clients.jira_client import JiraClient
 from app.services.reel_workflow_service import ReelWorkflowService
+
+# Security scheme for JWT
+security = HTTPBearer()
 
 
 def get_jira_service() -> JiraService:
@@ -80,3 +88,90 @@ def get_reel_workflow_service() -> ReelWorkflowService:
     """
     jira_client = get_jira_client()
     return ReelWorkflowService(jira_client)
+
+
+# ============================================================================
+# Authentication Dependencies
+# ============================================================================
+
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db)
+) -> User:
+    """
+    Get the current authenticated user from JWT token.
+
+    This dependency should be used in endpoints that require authentication.
+
+    Args:
+        credentials: HTTP Bearer token from Authorization header
+        db: Database session
+
+    Returns:
+        User: The authenticated user object
+
+    Raises:
+        HTTPException 401: If token is invalid or expired
+        HTTPException 403: If user is inactive
+
+    Example:
+        @app.get("/protected")
+        def protected_route(current_user: User = Depends(get_current_user)):
+            return {"user": current_user.username}
+    """
+    token = credentials.credentials
+    payload = verify_token(token)
+
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido o expirado",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    user_id: int = payload.get("sub")
+    if user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido: falta subject",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Usuario no encontrado",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Usuario inactivo",
+        )
+
+    return user
+
+
+async def get_current_active_superuser(
+    current_user: User = Depends(get_current_user)
+) -> User:
+    """
+    Get current user and verify they are a superuser.
+
+    Args:
+        current_user: The authenticated user
+
+    Returns:
+        User: The authenticated superuser
+
+    Raises:
+        HTTPException 403: If user is not a superuser
+    """
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permisos de administrador"
+        )
+    return current_user
