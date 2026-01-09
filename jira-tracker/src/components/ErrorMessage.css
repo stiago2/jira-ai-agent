@@ -1,0 +1,43 @@
+.error-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background-color: #ffebe6;
+  border: 2px solid #ff5630;
+  border-radius: 4px;
+  max-width: 500px;
+  margin: 20px auto;
+}
+
+.error-message__icon {
+  font-size: 48px;
+}
+
+.error-message__text {
+  font-size: 15px;
+  color: #bf2600;
+  margin: 0;
+  text-align: center;
+}
+
+.error-message__button {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  background-color: #ff5630;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.error-message__button:hover {
+  background-color: #de350b;
+}
+
+.error-message__button:active {
+  background-color: #bf2600;
+}

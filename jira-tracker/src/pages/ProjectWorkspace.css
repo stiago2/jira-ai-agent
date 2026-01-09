@@ -1,0 +1,109 @@
+.project-workspace {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f4f5f7;
+}
+
+.project-workspace__header {
+  background: linear-gradient(135deg, #0052cc 0%, #0747a6 100%);
+  color: white;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.project-workspace__back-button {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 16px;
+}
+
+.project-workspace__back-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.project-workspace__header-content {
+  text-align: center;
+}
+
+.project-workspace__title {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.project-workspace__subtitle {
+  font-size: 16px;
+  margin: 0;
+  opacity: 0.9;
+}
+
+.project-workspace__key {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 14px;
+  font-weight: 600;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.project-workspace__content {
+  flex: 1;
+  padding: 48px 24px;
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.project-workspace__form-container {
+  background-color: white;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
+}
+
+.project-workspace__info {
+  background-color: white;
+  padding: 32px;
+  border-radius: 8px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
+  height: fit-content;
+}
+
+.project-workspace__info-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #172b4d;
+  margin: 0 0 16px 0;
+}
+
+.project-workspace__info-list {
+  margin: 0;
+  padding-left: 20px;
+  color: #42526e;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.project-workspace__info-list li {
+  margin-bottom: 8px;
+}
+
+@media (max-width: 1024px) {
+  .project-workspace__content {
+    grid-template-columns: 1fr;
+  }
+
+  .project-workspace__info {
+    order: -1;
+  }
+}

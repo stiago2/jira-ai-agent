@@ -1,0 +1,182 @@
+.subtask-selector {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.subtask-selector__label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #172b4d;
+}
+
+.subtask-selector__button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  border: 2px solid #dfe1e6;
+  border-radius: 4px;
+  background-color: white;
+  color: #172b4d;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.subtask-selector__button:hover:not(:disabled) {
+  border-color: #0052cc;
+}
+
+.subtask-selector__button--open {
+  border-color: #0052cc;
+  box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.1);
+}
+
+.subtask-selector__button:disabled {
+  background-color: #f4f5f7;
+  cursor: not-allowed;
+  color: #6b778c;
+  opacity: 0.7;
+}
+
+.subtask-selector__button-text {
+  flex: 1;
+}
+
+.subtask-selector__arrow {
+  font-size: 10px;
+  color: #6b778c;
+  margin-left: 8px;
+}
+
+.subtask-selector__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background-color: white;
+  border: 2px solid #0052cc;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.subtask-selector__actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 12px 8px 12px;
+  border-bottom: 1px solid #dfe1e6;
+}
+
+.subtask-selector__action-button {
+  flex: 1;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0052cc;
+  background-color: white;
+  border: 1px solid #dfe1e6;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.subtask-selector__action-button:hover:not(:disabled) {
+  background-color: #deebff;
+  border-color: #0052cc;
+}
+
+.subtask-selector__action-button:disabled {
+  color: #a5adba;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.subtask-selector__list {
+  overflow-y: auto;
+  max-height: 280px;
+}
+
+.subtask-selector__option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #f4f5f7;
+}
+
+.subtask-selector__option:hover:not(.subtask-selector__option--disabled) {
+  background-color: #f4f5f7;
+}
+
+.subtask-selector__option--selected {
+  background-color: #deebff;
+}
+
+.subtask-selector__option--selected:hover:not(.subtask-selector__option--disabled) {
+  background-color: #b3d4ff;
+}
+
+.subtask-selector__option--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.subtask-selector__checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #0052cc;
+  flex-shrink: 0;
+}
+
+.subtask-selector__option--disabled .subtask-selector__checkbox {
+  cursor: not-allowed;
+}
+
+.subtask-selector__emoji {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.subtask-selector__option-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.subtask-selector__option-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #172b4d;
+}
+
+.subtask-selector__option-description {
+  font-size: 12px;
+  color: #6b778c;
+}
+
+.subtask-selector__footer {
+  padding: 8px 12px;
+  border-top: 1px solid #dfe1e6;
+  background-color: #fafbfc;
+}
+
+.subtask-selector__help-text {
+  font-size: 11px;
+  color: #6b778c;
+}

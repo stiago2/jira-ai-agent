@@ -1,0 +1,39 @@
+# Multi-stage build para Frontend React
+
+# Stage 1: Build
+FROM node:18-alpine as build
+
+WORKDIR /app
+
+# Copiar package files
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Copiar código fuente
+COPY . .
+
+# Build arguments para variables de entorno
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
+# Build de producción
+RUN npm run build
+
+# Stage 2: Production con Nginx
+FROM nginx:alpine
+
+# Copiar build de stage anterior
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Copiar configuración de nginx
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Exponer puerto
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost/ || exit 1
+
+# Inicio de nginx
+CMD ["nginx", "-g", "daemon off;"]
