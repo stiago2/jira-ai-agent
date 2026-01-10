@@ -14,9 +14,26 @@ import {
 } from '../types/batch.types';
 import { JiraUser, GetProjectUsersResponse } from '../types/user.types';
 import { ApiError } from '../types/error.types';
+import { AuthService } from './auth.service';
 
 // Base URL del backend - puede configurarse via variable de entorno
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
+/**
+ * Obtiene los headers con autenticación
+ */
+function getAuthHeaders(): HeadersInit {
+  const token = AuthService.getToken();
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  return headers;
+}
 
 /**
  * Clase para manejo de errores de API
@@ -64,7 +81,9 @@ export class ApiService {
    */
   static async getProjects(): Promise<JiraProject[]> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/projects`);
+      const response = await fetch(`${API_BASE_URL}/api/v1/projects`, {
+        headers: getAuthHeaders(),
+      });
       const data = await handleResponse<ProjectsListResponse>(response);
       return data.projects;
     } catch (error) {
@@ -82,9 +101,7 @@ export class ApiService {
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/tasks/create`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(request),
       });
       return handleResponse<CreateTaskResponse>(response);
@@ -105,9 +122,7 @@ export class ApiService {
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/content/instagram`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(request),
       });
       return handleResponse<CreateInstagramContentResponse>(response);
@@ -128,9 +143,7 @@ export class ApiService {
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/tasks/batch`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(request),
       });
       return handleResponse<CreateBatchTasksResponse>(response);
@@ -148,7 +161,10 @@ export class ApiService {
   static async getProjectUsers(projectKey: string): Promise<JiraUser[]> {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/v1/projects/${projectKey}/users`
+        `${API_BASE_URL}/api/v1/projects/${projectKey}/users`,
+        {
+          headers: getAuthHeaders(),
+        }
       );
       const data = await handleResponse<GetProjectUsersResponse>(response);
       return data.users;

@@ -3,6 +3,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { JiraProject } from '../types/project.types';
 import { ApiService, ApiServiceError } from '../services/api.service';
 import { ProjectSelector } from '../components/ProjectSelector';
@@ -12,6 +13,7 @@ import './HomePage.css';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [projects, setProjects] = useState<JiraProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,13 +43,30 @@ export const HomePage: React.FC = () => {
     navigate(`/project/${projectKey}`);
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
     <div className="home-page">
       <header className="home-page__header">
-        <h1 className="home-page__title">Jira AI Agent</h1>
-        <p className="home-page__subtitle">
-          Crea tareas en Jira usando lenguaje natural
-        </p>
+        <div className="header-content">
+          <div>
+            <h1 className="home-page__title">Jira AI Agent</h1>
+            <p className="home-page__subtitle">
+              Crea tareas en Jira usando lenguaje natural
+            </p>
+          </div>
+          <div className="header-user">
+            <span className="user-info">
+              {user?.username} ({user?.email})
+            </span>
+            <button onClick={handleLogout} className="btn-logout">
+              Cerrar Sesión
+            </button>
+          </div>
+        </div>
       </header>
 
       <main className="home-page__content">
