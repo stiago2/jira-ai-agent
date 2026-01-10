@@ -8,7 +8,20 @@
       "Bash(npm install:*)",
       "Bash(tree:*)",
       "Bash(git add:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nConfigure Render deployment with correct CORS and API URL\n\n- Fix CORS configuration in backend to allow frontend URL\n- Update frontend to use Vite env variable \\(VITE_API_URL\\)\n- Add TypeScript definitions for Vite environment variables\n\nBackend URL: https://jira-ai-agent.onrender.com\nFrontend URL: https://jira-tracker-l5m9.onrender.com\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nConfigure Render deployment with correct CORS and API URL\n\n- Fix CORS configuration in backend to allow frontend URL\n- Update frontend to use Vite env variable \\(VITE_API_URL\\)\n- Add TypeScript definitions for Vite environment variables\n\nBackend URL: https://jira-ai-agent.onrender.com\nFrontend URL: https://jira-tracker-l5m9.onrender.com\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(curl:*)",
+      "Bash(pip install:*)",
+      "Bash(git reset:*)",
+      "Bash(chmod:*)",
+      "Bash(pip3 list:*)",
+      "Bash(pip3 install:*)",
+      "Bash(uvicorn:*)",
+      "Bash(sqlite3:*)",
+      "Bash(export:*)",
+      "Bash(__NEW_LINE__ curl -s -X GET http://localhost:8000/api/v1/auth/me -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInVzZXJuYW1lIjoidGVzdHVzZXIiLCJleHAiOjE3NjgwODI1NDZ9.rJjvxpiWNq-hQx3Z5rpepLY9iVLaG7BuseBPlS8o7oQ\")"
     ]
   }
 }
