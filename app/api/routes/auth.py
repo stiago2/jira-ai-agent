@@ -15,7 +15,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
 
-from app.api.dependencies import get_current_user, get_db
+from app.api.dependencies import get_current_user
 from app.core.database import get_db
 from app.core.security import (
     verify_password,
@@ -139,7 +139,18 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
-    return new_user
+    # Return UserResponse explicitly
+    return UserResponse(
+        id=new_user.id,
+        email=new_user.email,
+        username=new_user.username,
+        jira_email=new_user.jira_email,
+        jira_base_url=new_user.jira_base_url,
+        is_active=new_user.is_active,
+        is_superuser=new_user.is_superuser,
+        created_at=new_user.created_at,
+        last_login=new_user.last_login
+    )
 
 
 @router.post("/login", response_model=Token)
