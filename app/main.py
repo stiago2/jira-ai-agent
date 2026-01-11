@@ -436,7 +436,16 @@ async def startup_event():
     print("  JIRA AI AGENT - Starting...")
     print("=" * 70)
 
-    print(f"✓ CORS Origins: {settings.CORS_ORIGINS}")
+    # Initialize database tables
+    from app.core.database import init_db
+    print("\n⏳ Initializing database...")
+    try:
+        init_db()
+        print("✓ Database initialized")
+    except Exception as e:
+        print(f"⚠️  Database initialization error: {str(e)}")
+
+    print(f"\n✓ CORS Origins: {settings.CORS_ORIGINS}")
     print(f"✓ Database: {settings.DATABASE_URL[:50]}..." if len(settings.DATABASE_URL) > 50 else f"✓ Database: {settings.DATABASE_URL}")
     print(f"✓ JWT Algorithm: {settings.JWT_ALGORITHM}")
 
