@@ -38,11 +38,31 @@ class Settings(BaseSettings):
             return [origin.strip() for origin in v.split(",") if origin.strip()]
         return v
 
-    # Jira Configuration
-    JIRA_BASE_URL: str = Field(..., description="Jira Cloud base URL")
-    JIRA_EMAIL: str = Field(..., description="Jira user email")
-    JIRA_API_TOKEN: str = Field(..., description="Jira API token")
+    # Jira Configuration (Optional - can be configured per user)
+    JIRA_BASE_URL: str = Field(default="", description="Jira Cloud base URL")
+    JIRA_EMAIL: str = Field(default="", description="Jira user email")
+    JIRA_API_TOKEN: str = Field(default="", description="Jira API token")
     JIRA_DEFAULT_PROJECT: str = Field(default="PROJ")
+
+    # Authentication & Security
+    SECRET_KEY: str = Field(..., description="Secret key for general encryption")
+    JWT_SECRET_KEY: str = Field(..., description="Secret key for JWT tokens")
+    JWT_ALGORITHM: str = Field(default="HS256", description="JWT algorithm")
+    JWT_EXPIRATION_MINUTES: int = Field(default=10080, description="JWT expiration in minutes (default 7 days)")
+
+    # Database
+    DATABASE_URL: str = Field(default="sqlite:///./jira_agent.db", description="Database connection URL")
+
+    # CORS
+    CORS_ORIGINS: Union[List[str], str] = Field(default=["http://localhost:3000"], description="Allowed CORS origins")
+
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, v):
+        """Parse CORS_ORIGINS from comma-separated string or list."""
+        if isinstance(v, str):
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        return v
 
     # AI/LLM Configuration (for future implementation)
     LLM_PROVIDER: str = Field(default="openai")

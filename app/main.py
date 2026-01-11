@@ -8,7 +8,6 @@ from fastapi import FastAPI, HTTPException, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional, List
-import os
 from dotenv import load_dotenv
 
 # Cargar variables de entorno desde .env
@@ -19,6 +18,7 @@ from app.clients.jira_client import JiraAPIError, JiraClient
 from app.api.routes import instagram, batch_tasks, projects, auth, subtasks
 from app.api.dependencies import get_jira_client, get_user_jira_client, get_current_user
 from app.models.user import User
+from app.core.config import settings
 
 
 # ============================================================================
@@ -101,27 +101,10 @@ app = FastAPI(
 )
 
 # Configure CORS
-# Permitir frontend de producción y desarrollo
-allowed_origins = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "https://jira-tracker-l5m9.onrender.com",
-]
-
-# Middleware para debug de CORS (debe ir ANTES de agregar CORSMiddleware)
-@app.middleware("http")
-async def log_cors_debug(request, call_next):
-    origin = request.headers.get("origin")
-    method = request.method
-    print(f"🌐 {method} request from origin: {origin or 'No Origin'}")
-    if origin and origin not in allowed_origins:
-        print(f"⚠️  Origin NOT in allowed list!")
-    response = await call_next(request)
-    return response
-
+# Usar CORS_ORIGINS de settings (variable de entorno)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -183,23 +166,31 @@ async def health_check():
     """
     Health check endpoint.
 
-    Verifica que la API está funcionando y que la conexión con Jira es válida.
+    Verifica que la API está funcionando.
     """
     try:
-        # Verificar configuración de Jira
-        jira_client = get_jira_client()
+        # Verificar si hay credenciales de Jira configuradas globalmente
+        jira_configured = bool(settings.JIRA_BASE_URL and settings.JIRA_EMAIL and settings.JIRA_API_TOKEN)
 
-        # Test de conexión
-        user = jira_client.get_current_user()
-
-        return {
+        response = {
             "status": "healthy",
-            "jira_connection": "ok",
-            "jira_user": user.get("displayName", "unknown"),
-            "parser": "rule-based"
+            "parser": "rule-based",
+            "database": "connected" if settings.DATABASE_URL else "not configured"
         }
-    except HTTPException:
-        raise
+
+        if jira_configured:
+            try:
+                jira_client = get_jira_client()
+                user = jira_client.get_current_user()
+                response["jira_connection"] = "ok"
+                response["jira_user"] = user.get("displayName", "unknown")
+            except Exception as e:
+                response["jira_connection"] = "error"
+                response["jira_error"] = str(e)
+        else:
+            response["jira_connection"] = "not configured (per-user credentials)"
+
+        return response
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -445,20 +436,11 @@ async def startup_event():
     print("  JIRA AI AGENT - Starting...")
     print("=" * 70)
 
-    # Verificar variables de entorno
-    required_vars = ["JIRA_BASE_URL", "JIRA_EMAIL", "JIRA_API_TOKEN"]
-    missing_vars = [var for var in required_vars if not os.getenv(var)]
+    print(f"✓ CORS Origins: {settings.CORS_ORIGINS}")
+    print(f"✓ Database: {settings.DATABASE_URL[:50]}..." if len(settings.DATABASE_URL) > 50 else f"✓ Database: {settings.DATABASE_URL}")
+    print(f"✓ JWT Algorithm: {settings.JWT_ALGORITHM}")
 
-    if missing_vars:
-        print("⚠️  WARNING: Faltan las siguientes variables de entorno:")
-        for var in missing_vars:
-            print(f"   - {var}")
-        print("\n   La API puede no funcionar correctamente.")
-        print("   Configura estas variables en .env o en el entorno.\n")
-    else:
-        print("✓ Variables de entorno configuradas correctamente\n")
-
-    print("✓ Servidor iniciado")
+    print("\n✓ Servidor iniciado")
     print("  - Health check: http://localhost:8000/api/v1/health")
     print("  - Docs: http://localhost:8000/docs")
     print("=" * 70)
