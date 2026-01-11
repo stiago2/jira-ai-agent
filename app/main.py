@@ -97,7 +97,7 @@ class ProjectsListResponse(BaseModel):
 app = FastAPI(
     title="Jira AI Agent",
     description="AI Agent that creates Jira tasks from natural language",
-    version="0.1.0",
+    version="0.2.0",
 )
 
 # Configure CORS
