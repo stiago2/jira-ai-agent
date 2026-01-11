@@ -7,6 +7,7 @@ import {
   LoginRequest,
   RegisterRequest,
   AuthResponse,
+  UpdateJiraCredentialsRequest,
 } from '../types/auth.types';
 
 // Base URL del backend
@@ -144,6 +145,42 @@ export class AuthService {
     } finally {
       // Siempre limpiar el localStorage
       this.clearAuth();
+    }
+  }
+
+  /**
+   * Actualiza las credenciales de Jira del usuario actual
+   */
+  static async updateJiraCredentials(
+    token: string,
+    credentials: UpdateJiraCredentialsRequest
+  ): Promise<User> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/jira-credentials`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(credentials),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new AuthServiceError(
+          error.detail || 'Error al actualizar credenciales de Jira',
+          response.status
+        );
+      }
+
+      const updatedUser = await response.json();
+      this.saveUser(updatedUser);
+      return updatedUser;
+    } catch (error) {
+      if (error instanceof AuthServiceError) {
+        throw error;
+      }
+      throw new AuthServiceError('Error de conexión al actualizar credenciales de Jira');
     }
   }
 

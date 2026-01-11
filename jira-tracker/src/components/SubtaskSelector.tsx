@@ -3,12 +3,13 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
-import { AVAILABLE_SUBTASKS, DEFAULT_SUBTASKS } from '../types/subtask.types';
+import { AVAILABLE_SUBTASKS, setAvailableSubtasks } from '../types/subtask.types';
+import { SubtaskService } from '../services/subtask.service';
 import './SubtaskSelector.css';
 
 interface SubtaskSelectorProps {
-  selectedSubtasks: string[];
-  onSubtasksChange: (subtaskIds: string[]) => void;
+  selectedSubtasks: number[];
+  onSubtasksChange: (subtaskIds: number[]) => void;
   disabled?: boolean;
   label?: string;
 }
@@ -20,7 +21,29 @@ export const SubtaskSelector: React.FC<SubtaskSelectorProps> = ({
   label = 'Subtareas a crear',
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Cargar subtareas del usuario al montar el componente
+  useEffect(() => {
+    const loadSubtasks = async () => {
+      try {
+        const subtasks = await SubtaskService.getSubtasks();
+        setAvailableSubtasks(subtasks);
+
+        // Si no hay subtareas seleccionadas, seleccionar todas por defecto
+        if (selectedSubtasks.length === 0 && subtasks.length > 0) {
+          onSubtasksChange(subtasks.map(st => st.id));
+        }
+      } catch (error) {
+        console.error('Error loading subtasks:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSubtasks();
+  }, []);
 
   // Cerrar dropdown al hacer click fuera
   useEffect(() => {
@@ -45,7 +68,7 @@ export const SubtaskSelector: React.FC<SubtaskSelectorProps> = ({
     }
   };
 
-  const handleSubtaskToggle = (subtaskId: string) => {
+  const handleSubtaskToggle = (subtaskId: number) => {
     if (disabled) return;
 
     if (selectedSubtasks.includes(subtaskId)) {
@@ -73,6 +96,19 @@ export const SubtaskSelector: React.FC<SubtaskSelectorProps> = ({
   const selectedCount = selectedSubtasks.length;
   const totalCount = AVAILABLE_SUBTASKS.length;
   const allSelected = selectedCount === totalCount;
+
+  if (loading) {
+    return (
+      <div className="subtask-selector">
+        {label && (
+          <label className="subtask-selector__label">
+            {label}
+          </label>
+        )}
+        <div className="subtask-selector__loading">Cargando subtareas...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="subtask-selector" ref={dropdownRef}>

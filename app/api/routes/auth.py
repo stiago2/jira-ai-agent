@@ -39,20 +39,17 @@ class UserRegister(BaseModel):
     username: str = Field(..., min_length=3, max_length=50, description="Username")
     password: str = Field(..., min_length=8, description="Password (minimum 8 characters)")
 
-    # Jira credentials
-    jira_email: EmailStr = Field(..., description="Jira account email")
-    jira_api_token: str = Field(..., min_length=1, description="Jira API token")
-    jira_base_url: str = Field(..., description="Jira instance URL (e.g., https://yourcompany.atlassian.net)")
+    # Jira credentials (optional - can be configured later)
+    jira_email: Optional[EmailStr] = Field(None, description="Jira account email (optional)")
+    jira_api_token: Optional[str] = Field(None, description="Jira API token (optional)")
+    jira_base_url: Optional[str] = Field(None, description="Jira instance URL (optional)")
 
     class Config:
         json_schema_extra = {
             "example": {
                 "email": "user@example.com",
                 "username": "johndoe",
-                "password": "SecurePassword123!",
-                "jira_email": "john@company.com",
-                "jira_api_token": "ATATT3xFfGF0...",
-                "jira_base_url": "https://yourcompany.atlassian.net"
+                "password": "SecurePassword123!"
             }
         }
 
@@ -77,6 +74,22 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class UpdateJiraCredentials(BaseModel):
+    """Request model for updating Jira credentials."""
+    jira_email: EmailStr = Field(..., description="Jira account email")
+    jira_api_token: str = Field(..., min_length=1, description="Jira API token")
+    jira_base_url: str = Field(..., description="Jira instance URL")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "jira_email": "john@company.com",
+                "jira_api_token": "ATATT3xFfGF0...",
+                "jira_base_url": "https://yourcompany.atlassian.net"
+            }
+        }
 
 
 # ============================================================================
@@ -116,12 +129,22 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
             detail="Username ya existe"
         )
 
-    # Validate Jira URL format
-    if not user_data.jira_base_url.startswith(("http://", "https://")):
+    # Validate Jira URL format if provided
+    if user_data.jira_base_url and not user_data.jira_base_url.startswith(("http://", "https://")):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="URL de Jira debe empezar con http:// o https://"
         )
+
+    # Encrypt Jira token if provided
+    encrypted_jira_token = None
+    if user_data.jira_api_token:
+        encrypted_jira_token = encrypt_token(user_data.jira_api_token)
+
+    # Clean Jira URL if provided
+    jira_url = None
+    if user_data.jira_base_url:
+        jira_url = user_data.jira_base_url.rstrip("/")
 
     # Create new user
     new_user = User(
@@ -129,8 +152,8 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
         username=user_data.username,
         hashed_password=get_password_hash(user_data.password),
         jira_email=user_data.jira_email,
-        jira_api_token=encrypt_token(user_data.jira_api_token),  # Encrypt before storing
-        jira_base_url=user_data.jira_base_url.rstrip("/"),  # Remove trailing slash
+        jira_api_token=encrypted_jira_token,
+        jira_base_url=jira_url,
         is_active=True,
         is_superuser=False
     )
@@ -244,6 +267,57 @@ async def logout(current_user: User = Depends(get_current_user)):
         "message": "Logout exitoso",
         "detail": "Por favor, elimina el token del cliente"
     }
+
+
+@router.put("/jira-credentials", response_model=UserResponse)
+async def update_jira_credentials(
+    credentials: UpdateJiraCredentials,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Update Jira credentials for the current user.
+
+    Allows users to configure or update their Jira integration credentials
+    after registration.
+
+    Args:
+        credentials: New Jira credentials
+        current_user: Current authenticated user
+        db: Database session
+
+    Returns:
+        UserResponse: Updated user information
+
+    Raises:
+        HTTPException 400: If Jira URL format is invalid
+    """
+    # Validate Jira URL format
+    if not credentials.jira_base_url.startswith(("http://", "https://")):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="URL de Jira debe empezar con http:// o https://"
+        )
+
+    # Update user's Jira credentials
+    current_user.jira_email = credentials.jira_email
+    current_user.jira_api_token = encrypt_token(credentials.jira_api_token)
+    current_user.jira_base_url = credentials.jira_base_url.rstrip("/")
+
+    db.commit()
+    db.refresh(current_user)
+
+    return UserResponse(
+        id=current_user.id,
+        email=current_user.email,
+        username=current_user.username,
+        jira_email=current_user.jira_email,
+        jira_base_url=current_user.jira_base_url,
+        is_active=current_user.is_active,
+        is_superuser=current_user.is_superuser,
+        created_at=current_user.created_at,
+        last_login=current_user.last_login
+    )
 
 
 @router.get("/health")

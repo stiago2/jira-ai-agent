@@ -3,62 +3,41 @@
  */
 
 export interface SubtaskDefinition {
-  id: string;
+  id: number;  // Changed from string to number for DB IDs
   name: string;
   emoji: string;
   description: string;
   labels: string[];
+  order?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface SubtaskCreateRequest {
+  name: string;
+  emoji: string;
+  description?: string;
+  labels: string[];
+}
+
+export interface SubtaskUpdateRequest {
+  name?: string;
+  emoji?: string;
+  description?: string;
+  labels?: string[];
 }
 
 /**
- * Lista de todas las subtareas disponibles para workflows de Instagram
+ * Lista de todas las subtareas disponibles (ahora se cargan desde el backend)
  */
-export const AVAILABLE_SUBTASKS: SubtaskDefinition[] = [
-  {
-    id: 'seleccion',
-    name: 'Selección de tomas',
-    emoji: '🎬',
-    description: 'Organización del material',
-    labels: ['seleccion', 'footage', 'produccion']
-  },
-  {
-    id: 'edicion',
-    name: 'Edición',
-    emoji: '✂️',
-    description: 'Montaje del video',
-    labels: ['edicion', 'video-editing', 'postproduccion']
-  },
-  {
-    id: 'audio',
-    name: 'Diseño sonoro',
-    emoji: '🎵',
-    description: 'Audio y música',
-    labels: ['audio', 'sound-design', 'postproduccion']
-  },
-  {
-    id: 'color',
-    name: 'Color',
-    emoji: '🎨',
-    description: 'Corrección y gradación de color',
-    labels: ['color', 'color-grading', 'postproduccion']
-  },
-  {
-    id: 'copy',
-    name: 'Copy / Caption',
-    emoji: '✍️',
-    description: 'Redacción de texto',
-    labels: ['copy', 'caption', 'contenido']
-  },
-  {
-    id: 'export',
-    name: 'Export',
-    emoji: '📤',
-    description: 'Exportación final',
-    labels: ['export', 'final', 'delivery']
-  }
-];
+export let AVAILABLE_SUBTASKS: SubtaskDefinition[] = [];
+
+export function setAvailableSubtasks(subtasks: SubtaskDefinition[]) {
+  AVAILABLE_SUBTASKS = subtasks;
+}
 
 /**
  * Subtareas por defecto (todas seleccionadas)
  */
-export const DEFAULT_SUBTASKS = AVAILABLE_SUBTASKS.map(st => st.id);
+export const getDefaultSubtasks = () => AVAILABLE_SUBTASKS.map(st => st.id);
+export const DEFAULT_SUBTASKS: number[] = [];

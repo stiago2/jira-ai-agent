@@ -12,7 +12,7 @@ interface Task {
   text: string;
   description?: string;
   assignee?: string;
-  subtasks?: string[];
+  subtasks?: number[];
 }
 
 interface MultiTaskInputProps {
@@ -20,7 +20,7 @@ interface MultiTaskInputProps {
     text: string;
     description?: string;
     assignee?: string;
-    subtasks?: string[];
+    subtasks?: number[];
   }>) => void;
   loading?: boolean;
   placeholder?: string;
@@ -52,7 +52,7 @@ export const MultiTaskInput: React.FC<MultiTaskInputProps> = ({
     }
   };
 
-  const updateTask = (id: string, field: 'text' | 'description' | 'assignee' | 'subtasks', value: string | string[] | undefined) => {
+  const updateTask = (id: string, field: 'text' | 'description' | 'assignee' | 'subtasks', value: string | string[] | number[] | undefined) => {
     setTasks(tasks.map(t => t.id === id ? { ...t, [field]: value } : t));
   };
 

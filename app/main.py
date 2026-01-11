@@ -16,7 +16,7 @@ load_dotenv()
 
 from app.parsers.task_parser import create_parser, ParsedTask
 from app.clients.jira_client import JiraAPIError, JiraClient
-from app.api.routes import instagram, batch_tasks, projects, auth
+from app.api.routes import instagram, batch_tasks, projects, auth, subtasks
 from app.api.dependencies import get_jira_client, get_user_jira_client, get_current_user
 from app.models.user import User
 
@@ -130,6 +130,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
+app.include_router(subtasks.router, prefix="/api/v1")
 app.include_router(instagram.router, prefix="/api/v1/content")
 app.include_router(batch_tasks.router, prefix="/api/v1/tasks")
 app.include_router(projects.router, prefix="/api/v1")

@@ -24,6 +24,15 @@ export interface RegisterRequest {
   email: string;
   username: string;
   password: string;
+  jira_email?: string;
+  jira_api_token?: string;
+  jira_base_url?: string;
+}
+
+/**
+ * Request para actualizar credenciales de Jira
+ */
+export interface UpdateJiraCredentialsRequest {
   jira_email: string;
   jira_api_token: string;
   jira_base_url: string;
